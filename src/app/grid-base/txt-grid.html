@@ -1,0 +1,37 @@
+<div  id="maindiv" *ngIf="gridRows" class="ag-fresh"   > 
+    <ag-grid-angular #agGrid style="width:600px; height: 300px;"
+                     [gridOptions]="gridOptions"
+                     (modelUpdated)="onModelUpdated()"
+                     (cellClicked)="onCellClicked($event)"
+                     (cellDoubleClicked)="onCellDoubleClicked($event)"
+                     (cellContextMenu)="onCellContextMenu($event)"
+                     (cellValueChanged)="onCellValueChanged($event)"
+                     (cellFocused)="onCellFocused($event)"
+                     (rowSelected)="onRowSelected($event)"
+                     (selectionChanged)="onSelectionChanged()"
+                     (beforeFilterChanged)="onBeforeFilterChanged()"
+                     (afterFilterChanged)="onAfterFilterChanged()"
+                     (filterModified)="onFilterModified()"
+                     (beforeSortChanged)="onBeforeSortChanged()"
+                     (afterSortChanged)="onAfterSortChanged()"
+                     (virtualRowRemoved)="onVirtualRowRemoved($event)"
+                     (rowClicked)="onRowClicked($event)"
+                     (onkeypress)="onKeyPress($event)"
+                     (ready)="onReady($event)"
+                     (columnEverythingChanged)="onColumnEvent($event)"
+                     (columnRowGroupChanged)="onColumnEvent($event)"
+                     (columnValueChanged)="onColumnEvent($event)"
+                     (columnMoved)="onColumnEvent($event)"
+                     (columnVisible)="onColumnEvent($event)"
+                     (columnGroupOpened)="onColumnEvent($event)"
+                     (columnResized)="onColumnEvent($event)"
+                     (columnPinnedCountChanged)="onColumnEvent($event)"
+                     (dragStarted)="setDrag($event)"
+                     (dragStopped)="dragStopped($event)"
+                     (onDragging)="onDragOver($event)"
+                     (drop)="onDrop($event)">
+    </ag-grid-angular>
+</div> 
+
+
+
