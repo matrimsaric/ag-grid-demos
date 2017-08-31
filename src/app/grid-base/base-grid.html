@@ -1,5 +1,5 @@
 <div  id="maindiv" *ngIf="gridRows" class="ag-fresh"   > 
-    <ag-grid-angular #agGrid style="width:600px; height: 300px;"
+    <ag-grid-angular #agGrid style="width:500px; height: 300px;"
                      [gridOptions]="gridOptions"
                      (modelUpdated)="onModelUpdated()"
                      (cellClicked)="onCellClicked($event)"
@@ -8,7 +8,6 @@
                      (cellValueChanged)="onCellValueChanged($event)"
                      (cellFocused)="onCellFocused($event)"
                      (rowSelected)="onRowSelected($event)"
-                     (selectionChanged)="onSelectionChanged()"
                      (beforeFilterChanged)="onBeforeFilterChanged()"
                      (afterFilterChanged)="onAfterFilterChanged()"
                      (filterModified)="onFilterModified()"

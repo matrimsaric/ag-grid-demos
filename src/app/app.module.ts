@@ -7,15 +7,17 @@ import { AppComponent } from './app.component';
 
 
 import {AgGridModule} from 'ag-grid-angular/main';
-import { GridBaseComponent } from './grid-base/grid-base.component';
-import { TxtGrid } from './grid-base/txt-grid';
+import { BaseGrid } from './grid-base/base-grid';
 import "ag-grid-enterprise";
+import { SourceGridComponent } from './source-grid/source-grid.component';
+import { DestinationGridComponent } from './destination-grid/destination-grid.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    GridBaseComponent,
-    TxtGrid
+    BaseGrid,
+    SourceGridComponent,
+    DestinationGridComponent
   ],
   imports: [
     BrowserModule,

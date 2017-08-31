@@ -1,0 +1,16 @@
+<base-grid 
+id="destogrid"
+[gridCols]="columnDefs"
+[gridRows]="rowData"
+[readOnly]="windowReadOnly"
+[suppressRowClickSelection]=true
+(dragover)="handleDragOver($event)"
+(drop)="handleDrop($event)">
+</base-grid>
+
+<button (click)="testAdd()">Add New Row</button>
+<button (click)="testInsertOriginal()">Insert Data at location (deprecated)</button>
+<button (click)="testInsertNew()">Insert Data at location new</button><br/><br/>
+
+
+

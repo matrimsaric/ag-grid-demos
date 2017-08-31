@@ -4,7 +4,8 @@ import { CommonModule } from "@angular/common";
 
 // ag-grid
 import { AgGridNg2, BaseComponentFactory } from 'ag-grid-angular/main';
-import { GridOptions, ColDef, RangeSelection, GridCell, ICellRenderer, ICellRendererParams, ICellRendererFunc, ICellEditor } from 'ag-grid/main';
+import { GridOptions, ColDef, RangeSelection, GridCell, ICellRenderer,
+    ICellRendererParams, ICellRendererFunc, ICellEditor, RowNode } from 'ag-grid/main';
 import 'ag-grid-enterprise/main';
 
 
@@ -32,11 +33,11 @@ enum CONTEXT_MENU {
 }
 
 @Component({
-    selector: 'txt-grid',
+    selector: 'base-grid',
     providers: [ BaseComponentFactory ],
-    templateUrl: './txt-grid.html',
+    templateUrl: './base-grid.html',
 })
-export class TxtGrid implements OnChanges, OnInit {
+export class BaseGrid implements OnChanges, OnInit {
     @Input() gridRows: any[]; // row data is passed as is to ag-grid
 
     // custom Grid properties
@@ -46,7 +47,7 @@ export class TxtGrid implements OnChanges, OnInit {
     @Input() showActionBar: boolean = false; // if true then the action bar will be displayed.
     @Input() enableRangeSelection: boolean = false;// if true then multi-select will be permitted if false or not provided then will not enable multi selection
     @Input() contextMenuChoice: number = 0; // this is a BIT flag field -- i.e use 1 to set select on own, 2 to select drill on own, 3 to select both select and drill
-
+    @Input() enableDragDrop: boolean = false;
     @Input() rowSelection: string;
     @Input() suppressRowClickSelection: boolean = false;
     @Input() readOnly: boolean = false; //if true then all columns will be readonly.
@@ -66,10 +67,9 @@ e
     @Output() saveRequestAllDataEvent: EventEmitter<any> = new EventEmitter();// when changes are found, a single event is sent out with the grid data.
     @Output() onRowClickedEvent: EventEmitter<any> = new EventEmitter();
     @Output() gridColumnsFormattedEvent: EventEmitter<any> = new EventEmitter();
-
     public columnDefs: any[] = []; // ag-grid column definitions
     public gridOptions: GridOptions; // ag-grid options
-    private gridId: Date = new Date();
+    public gridId: Date = new Date();
 
 
     private contextMenuArray = [];
@@ -88,6 +88,10 @@ e
     private formatColumns: string[] = [];
     private formatExpressionColumns: RegExp[] = [];
     private createEditColumn: string[] = [];
+
+    private sourceGridId: Date;// holds dragged selection. If this 'drops' on the grid then an internal drag drop is in play
+    private infiniteLoopBlock: boolean;// some sections of the grid misbehave badly
+    private savedDragSourceData: any;// stores relevant key for internal drag/drop operations. Could by any type.
 
 
     constructor() {
@@ -160,15 +164,28 @@ e
 
     private rowPostCreate(params) {
 
-     
-        // if (this.gridColumnsLoaded == false) {
-        //     this.gridColumnsLoaded = true;
-        //     this.gridColumnsFormattedEvent.emit();
-        // }
+        if (params.eRow) {
+            var selectionChangedCallback = function(){
+                if(params.node.isSelected()){
+                    params.eRow.draggable = true;
 
+                    if (params.ePinnedLeftRow) {
+                        params.ePinnedLeftRow.draggable = true;
+                    }
+                } else{
+                    params.eRow.draggable = false;
 
+                    if (params.ePinnedLeftRow) {
+                        params.ePinnedLeftRow.draggable = false;
+                    }
+                }
+            };
+            params.node.addEventListener(RowNode.EVENT_ROW_SELECTED, selectionChangedCallback);
 
+            params.eRow.draggable = false;
+        }
     }
+   
 
   
 
@@ -258,7 +275,33 @@ e
 
         var columnDef: any;
 
-       
+        if (this.enableDragDrop) {
+            //var columnDef: ColDef | ColGroupDef = {};
+            
+            columnDef = {};
+            columnDef.editable = true;
+            // if we are auto pinning certain columns set it here
+            if (this.autoPinToColumn > -1 && localCount < this.autoPinToColumn) {
+                columnDef.pinned = "left";
+            }
+            localCount += 1;
+            columnDef.hide = false;
+            columnDef.headerName = "";
+            columnDef.__sysCheckbox = true;
+
+            columnDef.width = 30;
+            columnDef.checkboxSelection = true;
+
+            this.columnDefs.push(columnDef);
+
+            // always add id column in case we decide to allow internal drag drop
+            columnDef = {
+                editable: false,
+                hide: true,
+                field: "internalId"
+            };
+            agColumnDef.push(columnDef);
+        }
 
         // here we need to create the column defs dynamically from the provided gridColumnDefs
         
@@ -302,126 +345,21 @@ e
 
     
 
-    
-
-    private onCellValueChanged($event) {
-        // if ($event.newValue == $event.oldValue) return;
-
-    
+  
   
 
-        // this.changesMade($event);
 
-    }
+
+
 
   
 
 
 
 
-    private onCellFocused($event) {
-
-        // //If this cell is a dropdown then put the cell into edit mode.       
-        // if ($event.column && $event.column.cellEditor && $event.column.cellEditor.name == "SimpleDDEditor") {
-        //     this.gridOptions.api.startEditingCell({ colKey: $event.column.colId, rowIndex: $event.rowIndex });
-        // }
-
-        // var currentSortedRow: any = this.gridOptions.api.getModel().getRow($event.rowIndex);
-        // var autoBlock: boolean = false;
-
-        // /// the following section of code is requried when we want to adjust cell editing
-        // /// dependant on a specific field and a situation that is dependant on the specific
-        // /// row selected. It requires the Input() rowCellEditBlock to be passed in to
-        // ///enable the code (see DMD-dataset-detail.component.ts and related)
-        // if (currentSortedRow && this.rowCellEditBlock && this.rowCellEditBlock.length > 0) {
-        //     // we want a row block, field will split (initially) into an array split by |
-        //     // if we ever enhance to multiple fields then this would need a different splitter
-        //     var blockStats: string[] = this.rowCellEditBlock.split("|");
-
-        //     if (blockStats.length == 3) {
-        //         var checkField: string = blockStats[0];
-        //         var againstField: string = blockStats[1];
-        //         var againstValue: string = blockStats[2];
-
-        //         if ($event.column && $event.column.colId && $event.column.colId == checkField) {
-        //             if (currentSortedRow.data && currentSortedRow.data[againstField] &&
-        //                 currentSortedRow.data[againstField] != againstValue) {
-        //                 $event.column.colDef.editable = false;
-        //                 autoBlock = true;
-        //             }
-        //             else {
-        //                 $event.column.colDef.editable = true;
-        //             }
-        //         }
-        //     }
-
-             
-        // }
-
-        // if ($event.column && $event.column.colDef && $event.column.colDef.field ) {
-        //     if (this.createEditColumn.includes($event.column.colDef.field) && currentSortedRow && currentSortedRow.data){
-        //         if(currentSortedRow.data.CrudStatus == 1 && autoBlock == false){
-        //             // this is counted as a Created Row so is editable
-        //             $event.column.colDef.editable = true;
-        //         }else{
-        //         $event.column.colDef.editable = false;
-        //         }
-        //     }
-                
-        // }
-
-        
-
-
-       
-
-    }
+  
 
    
-
-
-  
-
-
-
-
-    /**
-     * This method will add a new row to the grid at the currently focused row. If there is no focus then the row will be added to the top of the grid. After adding the row, focus will be set to the provided (focusCol) column.
-     * @param rowData The row to be added to the grid
-     * @param focusCol The column to set focus to after the row has been added.
-     */
-    public addNewRow(rowData: any, focusCol: string) {
-        //add the status property
-        rowData.__sys = {
-            status: 0
-        }
-
-        //Insert new row
-        var focusedCell: GridCell = this.gridOptions.api.getFocusedCell();
-        var insertAtRow: number = 0;
-        if (focusedCell) {
-            insertAtRow = focusedCell.rowIndex;
-        }
-        this.gridOptions.api.insertItemsAtIndex(insertAtRow, [rowData]);
-        //this.gridOptions.rowData.push(rowData); //also need to add into main source. //NO the calling class handles the save this
-        //inserts two records into the grid. This was done to prevent the 'add new row' hit 'expand window' and row disappears as the grid
-        //row gets removed when refreshed. if this is re-added then a different correction for the original bug fix will need applying at the same time
-
-        //position the grid so that the row is visible.
-        this.gridOptions.api.setFocusedCell(insertAtRow, focusCol);
-    }
-
-
-    /**
-    * This method will reset the column properties.
-    * @param colDefs The new column definitions
-    */
-    public setColumnDefs(colDefs: GridColDef[]) {
-        this.gridCols = colDefs;
-        this.columnDefs = [];
-        this.columnDefs = this.setupColumns(this.columnDefs, colDefs);
-        this.gridOptions.api.setColumnDefs(this.columnDefs);
-    }
 
 }
 

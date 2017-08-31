@@ -1,0 +1,13 @@
+
+<base-grid 
+id="sourcegrid"
+[gridCols]="columnDefs"
+[enableDragDrop]="true"
+[gridRows]="rowData"
+enableRangeSelection="false"
+rowSelection="multiple"
+[suppressRowClickSelection]=true
+[readOnly]="windowReadOnly"
+(dragstart)="handleDragStart($event)">
+</base-grid>
+
