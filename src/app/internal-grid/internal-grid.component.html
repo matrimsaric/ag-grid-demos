@@ -1,0 +1,11 @@
+<base-grid 
+id="internalGrid"
+[gridCols]="columnDefs"
+[gridRows]="rowData"
+[enableDragDrop]=true
+[readOnly]="windowReadOnly"
+[suppressRowClickSelection]=true
+(internalDragDropOccurred)="internalDragDropSave($event)"
+rowSelection ="multiple"
+(dragover)="handleDragOver($event)">
+</base-grid>

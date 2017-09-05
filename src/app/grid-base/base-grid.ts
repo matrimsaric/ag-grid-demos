@@ -67,6 +67,8 @@ e
     @Output() saveRequestAllDataEvent: EventEmitter<any> = new EventEmitter();// when changes are found, a single event is sent out with the grid data.
     @Output() onRowClickedEvent: EventEmitter<any> = new EventEmitter();
     @Output() gridColumnsFormattedEvent: EventEmitter<any> = new EventEmitter();
+    @Output() internalDragDropOccurred: EventEmitter<any> = new EventEmitter();// when an internal drag drop adjusts rows then this event will fire with grid data 
+
     public columnDefs: any[] = []; // ag-grid column definitions
     public gridOptions: GridOptions; // ag-grid options
     public gridId: Date = new Date();
@@ -144,6 +146,8 @@ e
 
     }
 
+    
+
     groupRowInnerRendererFunc(params): any {
         var html = '';
 
@@ -182,8 +186,78 @@ e
             };
             params.node.addEventListener(RowNode.EVENT_ROW_SELECTED, selectionChangedCallback);
 
+            // also need to remove the node from the list
+            params.addRenderedRowListener('rowRemoved', function(){
+                params.node.removeEventListener(RowNode.EVENT_ROW_SELECTED, selectionChangedCallback);
+            });
+
             params.eRow.draggable = false;
         }
+    }
+
+
+    // ***************************** Drag Drop Methods ******************************
+    public onDrop($event) {
+        if (this.readOnly) return;
+
+        
+        if ($event && !this.infiniteLoopBlock) {
+            if ($event.dataTransfer) {
+                var evString = $event.dataTransfer.getData("text");
+                if(evString || evString.length > 0){
+                    return;// not an internal drag drop as we have transfer data!
+                }
+
+                this.infiniteLoopBlock = true;
+
+                var targetRowId: number = 0;
+                // get the destination row BEFORE we start adjusting rows
+                // original first but post pin seems to be second structure.
+                if ($event.target.offsetParent.attributes && $event.target.offsetParent.attributes["row-index"]) {
+                    targetRowId = +$event.target.offsetParent.attributes["row-index"].value;
+                }
+                else {
+                    if ($event.target.parentNode.parentNode.attributes && $event.target.parentNode.parentNode.attributes["row-index"]) {
+                        targetRowId = +$event.target.parentNode.parentNode.attributes["row-index"].value;
+                    }
+                }
+
+                var saveNodes = this.gridOptions.api.getSelectedNodes();
+
+
+                // we do though need to remove from the source data
+                // loop the seleted nodes to get the internal id
+                for (var a = 0; a < saveNodes.length; a++) {
+                    var localId: any = saveNodes[a].data["internalId"];
+
+                    // now we have the id we can find the relevant row and collect the record
+                    for (var b = 0; b < this.gridRows.length; b++) {
+                        if (this.gridRows[b]["internalId"] == localId) {
+                            this.gridRows.splice(b, 1);
+
+                            // add in to the new location
+                            this.gridRows.splice(targetRowId, 0, saveNodes[a].data);
+                            break;
+                        }
+
+                    }
+                }
+
+                // clear set options so grid holds no 'memory'
+                this.savedDragSourceData = null;
+                this.gridOptions.api.clearRangeSelection();
+
+                // not connected but in live shout out to owning component that grid
+                // has changed and a save is required.
+                this.internalDragDropOccurred.emit(this.gridRows);// force a save (if picked up by parent)
+                
+                
+
+                this.infiniteLoopBlock = false;
+            }
+        }
+        this.sourceGridId = null;
+
     }
    
 
@@ -251,7 +325,14 @@ e
 
         if(this.gridRows  && this.gridRows != null && this.gridRows.length > 0){
             for (var gridRow of this.gridRows) {
-             
+                if (this.enableDragDrop) {
+                    // if internal drag drop is enabled then we
+                    // need to populate our new internal id column with matching ids
+                    gridRow.internalId = internalCount;
+
+                    internalCount += 1;
+                }
+
                 var sys: any = {};
 
                 sys.status = 0; // 0=No change //1=changed
@@ -270,7 +351,8 @@ e
     }
 
 
-    private setupColumns(agColumnDef, txtColumnDef: GridColDef[]) : any[] {      
+    private setupColumns(agColumnDef, txtColumnDef: GridColDef[]) : any[] {   
+        console.log('setup columns called');   
         var localCount: number = 0;
 
         var columnDef: any;
@@ -309,10 +391,8 @@ e
             columnDef = {};
 
             columnDef.headerName = gridCol.headerName;
-
-       
-  
             columnDef.field = gridCol.field;
+            
             if (gridCol.width) {
                 columnDef.width = gridCol.width;
             }
@@ -320,8 +400,6 @@ e
             if (gridCol.rowGroupIndex != undefined) {
                 columnDef.rowGroupIndex = gridCol.rowGroupIndex;
             }
-
-            
     
             localCount += 1;
 
@@ -334,8 +412,6 @@ e
             if (columnDef.checkboxSelection) {
                 columnDef.pinned = "left";
             }
-
-
 
             agColumnDef.push(columnDef);
         }

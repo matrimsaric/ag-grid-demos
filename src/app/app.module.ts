@@ -11,13 +11,15 @@ import { BaseGrid } from './grid-base/base-grid';
 import "ag-grid-enterprise";
 import { SourceGridComponent } from './source-grid/source-grid.component';
 import { DestinationGridComponent } from './destination-grid/destination-grid.component';
+import { InternalGridComponent } from './internal-grid/internal-grid.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     BaseGrid,
     SourceGridComponent,
-    DestinationGridComponent
+    DestinationGridComponent,
+    InternalGridComponent
   ],
   imports: [
     BrowserModule,
