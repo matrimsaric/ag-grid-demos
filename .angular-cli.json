@@ -20,10 +20,13 @@
       "prefix": "app",
       "styles": [
         "../node_modules/ag-grid/dist/styles/ag-grid.css",
+        "../node_modules/bootstrap/dist/css/bootstrap.min.css",
         "../node_modules/ag-grid/dist/styles/theme-fresh.css",
         "./assets/css/txt-grid.css"
       ],
-      "scripts": [],
+      "scripts": [
+        "../node_modules/bootstrap/dist/js/bootstrap.min.js"        
+      ],
       "environmentSource": "environments/environment.ts",
       "environments": {
         "dev": "environments/environment.ts",

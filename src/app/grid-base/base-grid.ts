@@ -8,6 +8,8 @@ import { GridOptions, ColDef, RangeSelection, GridCell, ICellRenderer,
     ICellRendererParams, ICellRendererFunc, ICellEditor, RowNode } from 'ag-grid/main';
 import 'ag-grid-enterprise/main';
 
+import { CommentRenderer } from './cell-editors/comment-renderer';
+
 
 import { Observable } from 'rxjs/observable';
 import { timer } from 'rxjs/observable/timer';
@@ -250,7 +252,7 @@ e
                 // not connected but in live shout out to owning component that grid
                 // has changed and a save is required.
                 this.internalDragDropOccurred.emit(this.gridRows);// force a save (if picked up by parent)
-                
+                this.gridOptions.api.redrawRows();
                 
 
                 this.infiniteLoopBlock = false;
@@ -261,7 +263,16 @@ e
     }
    
 
-  
+    private onCellFocused($event) {
+
+        if($event.column && $event.column.colId == "comment"){
+            this.gridOptions.suppressRowClickSelection = true;
+            console.log('user focused simulate activitiy');
+            //alert('focus do stuff');
+        } else {
+            this.gridOptions.suppressRowClickSelection = false;
+        }
+    }
 
     private changesMade($event): void {
         $event.data.__sysstatus = 1;
@@ -413,6 +424,14 @@ e
                 columnDef.pinned = "left";
             }
 
+            switch (gridCol.editType) {
+                case EditType.Comment:
+                    columnDef.cellRenderer = CommentRenderer;
+                    columnDef.tooltipField = "comment";
+                    columnDef.suppressMenu = true;
+                break;
+            }
+
             agColumnDef.push(columnDef);
         }
 
@@ -440,13 +459,26 @@ e
 }
 
 
-
+export enum EditType {
+    DropDown,
+    CheckBox,
+    Key,
+    EntityVariable,
+    RowColDataSelector,
+    Severity,
+    CustomSqlObject,
+    CustomDatabaseObject,
+    Custom,
+    Comment,
+    Exclude
+}
 
 
 export interface GridColDef {
     headerName: string;
     field: string;
     editable? :any;
+    editType? :EditType;
     width?: number;
     editParams? :  {}; // expects a JSON object
     hide?: boolean;

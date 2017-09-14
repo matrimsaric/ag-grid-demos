@@ -15,21 +15,21 @@ export class InternalGridComponent implements OnInit {
   @ViewChild(BaseGrid) private baseGrid: BaseGrid;
 
 
-  columnDefs;
-  rowData;
+  columnDefs2;
+  rowData2;
   count: number = 6;
 
 
   private rowsSelected: any;// usually this is handled by tehe drag object since we are on the same window just track
 
   constructor() { 
-    this.columnDefs = [
+    this.columnDefs2 = [
       {headerName: "Make", field: "make", editable: true},
       {headerName: "Price", field: "price"},
       {headerName: "", field: "id", hide: true }
   ];
 
-  this.rowData = [
+  this.rowData2 = [
       {make: "AA", model: "AAA", price: 1, id: 0},
       {make: "BB", model: "BBB", price: 2, id: 1},
       {make: "CC", model: "CCC", price: 3, id: 2},
@@ -68,8 +68,8 @@ private handleDragOver($event: any): void{
 
 
     // as this is a demo just replace the current datalist with the adjusted data list
-    this.rowData = null;
-    this.rowData = rows;
+    this.rowData2 = null;
+    this.rowData2 = rows;
     
     
 }

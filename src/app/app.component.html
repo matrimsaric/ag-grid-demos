@@ -1,20 +1,37 @@
-<div>
-    <label>Destination grid</label>
-    <destination-grid></destination-grid>
-</div>
-<br/><br/>
 
-<div>
-    <label>Source grid, select row(s) to drag to destination grid</label>
-    <source-grid></source-grid>
-</div>
+
+
+
 
 <br/><br/>
-
-
-<div>
-    <label>Internal Drag Drop</label>
-    <internal-grid></internal-grid>
+<div class="row" >
+  <div class="col-md-1"></div>
+  <div class="col-md-10">
+    <md-tab-group>
+        <md-tab label="Drag Drop between grids">
+                <div>
+                        <label>Destination grid</label>
+                        <destination-grid></destination-grid>
+                    </div>
+                    <br/><br/>
+                    
+                    <div>
+                        <label>Source grid, select row(s) to drag to destination grid</label>
+                        <source-grid></source-grid>
+                    </div>
+                    
+                    <br/><br/>
+        </md-tab> 
+        <!-- <md-tab label="Internal row drag drop">not working currently in this version
+                <div>
+                        <label>Internal Drag Drop</label>
+                        <internal-grid></internal-grid>
+                    </div>
+        </md-tab>  -->
+        <md-tab label="Disable row click">
+            Click i icon to show alert and not select row, click elsewhere to select row<br/>
+            <app-focus-grid></app-focus-grid>
+        </md-tab> 
+    </md-tab-group>  
+    </div>
 </div>
-
-

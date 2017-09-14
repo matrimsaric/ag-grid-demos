@@ -23,9 +23,12 @@
     "ag-grid": "13.0.1",
     "ag-grid-angular": "13.0.0",
     "ag-grid-enterprise": "13.0.1",
+    "@angular/material": "2.0.0-beta.2",
     "core-js": "^2.4.1",
     "rxjs": "^5.1.0",
-    "zone.js": "^0.8.4"
+    "zone.js": "^0.8.4",
+    "@angular/animations": "4.3.6",
+    "bootstrap": "3.3.7"
   },
   "devDependencies": {
     "@angular/cli": "1.0.0",
